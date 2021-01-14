@@ -20,9 +20,9 @@ class CustomUserManager(BaseUserManager):
 			return user
 
 	def create_superuser(self, email, password, **extra_fields):
-	"""
-	Create and save a SuperUser
-	"""
+		"""
+		Create and save a SuperUser
+		"""
 		extra_fields.setdefault('is_staff', True)
 		extra_fields.setdefault('is_superuser', True)
 		extra_fields.setdefault('is_active', True)
