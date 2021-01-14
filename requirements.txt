@@ -1,0 +1,10 @@
+Package       Version
+------------- -------
+asgiref       3.3.1
+Django        3.1.5
+mysqlclient   2.0.3
+pip           20.3.3
+python-dotenv 0.15.0
+pytz          2020.5
+setuptools    49.2.1
+sqlparse      0.4.1
