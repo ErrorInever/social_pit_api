@@ -6,8 +6,19 @@ class UsersManagersTests(TestCase):
 
 	def test_create_user(self):
 		User = get_user_model()
-		user = User.objects.create_user(email='some@user.com', password='password')
+		user = User.objects.create_user(
+			email='some@user.com', 
+			password='password',
+			first_name='John',
+			last_name='Bath',
+			hometown='Moscow',
+			bio='Some time some text'
+		)
 		self.assertEqual(user.email, 'some@user.com')
+		self.assertEqual(user.first_name, 'John')
+		self.assertEqual(user.last_name, 'Bath')
+		self.assertEqual(user.hometown, 'Moscow')
+		self.assertEqual(user.bio, 'Some time some text')
 		self.assertTrue(user.is_active)
 		self.assertFalse(user.is_staff)
 		self.assertFalse(user.is_superuser)
