@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+import cloudinary
 import os
 import dotenv
 from pathlib import Path
@@ -32,6 +33,12 @@ dotenv_file = os.path.join(BASE_DIR, ".env_values")
 if os.path.isfile(dotenv_file):
 	dotenv.load_dotenv(dotenv_file)
 SECRET_KEY = os.environ['SECRET_KEY']
+cloudinary.config(
+    secure=True,
+    cloud_name = os.environ['CLOUD_NAME'], 
+    api_key = os.environ['CLOUD_API_KEY'], 
+    api_secret = os.environ['CLOUD_API_SECRET'] 
+)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
