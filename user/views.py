@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from rest_framework.viewsets import ModelViewSet
+from user.models import CustomUser
+from user.serializers import CustomUserSerializer
 
-# Create your views here.
+
+class CustomUserViewSet(ModelViewSet):
+	queryset = CustomUser.objects.all()
+	serializer_class = CustomUserSerializer
