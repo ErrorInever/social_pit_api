@@ -20,7 +20,7 @@ from user.views import CustomUserViewSet
 
 
 router = SimpleRouter()
-router.register(r'user', CustomUserViewSet, basename='user')
+router.register(r'users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
