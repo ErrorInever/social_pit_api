@@ -19,6 +19,7 @@ class UsersManagersTests(TestCase):
 		self.assertEqual(user.last_name, 'Bath')
 		self.assertEqual(user.hometown, 'Moscow')
 		self.assertEqual(user.bio, 'Some time some text')
+		self.assertEqual(user.__str__(), user.email)
 		self.assertTrue(user.is_active)
 		self.assertFalse(user.is_staff)
 		self.assertFalse(user.is_superuser)
