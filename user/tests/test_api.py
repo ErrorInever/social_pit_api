@@ -24,7 +24,7 @@ class CustomUserApiTestCase(APITestCase):
 			hometown='Paris',
 			bio = 'Im a human'
 		)
-		url = reverse('user-list')
+		url = reverse('users-list')
 		response = self.client.get(url)
 		serializer_data = CustomUserSerializer([user_1, user_2], many=True).data
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
