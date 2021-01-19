@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Oauth</title>
+</head>
+<body>
+<a href="{% url "social:begin" "github" %}">Github</a>
+<p>Auth as {{request.user.first_name}} {{request.user.last_name}}<p>
+</body>
+</html>
