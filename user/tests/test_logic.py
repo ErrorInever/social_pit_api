@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from user.models import Post
 
 
 class UsersManagersTests(TestCase):
@@ -49,3 +50,30 @@ class UsersManagersTests(TestCase):
 			User.objects.create_superuser(
 				email='super@user.com', password='password', is_superuser=False
 				)
+
+
+class PostTests(TestCase):
+
+	def test_create_post(self):
+		User = get_user_model()
+		user = User.objects.create_user(
+			email='some@user.com', 
+			password='password',
+			first_name='John',
+			last_name='Bath',
+			hometown='Moscow',
+			bio='Some time some text'
+		)
+		post = Post(
+			author=user,
+			content="Its content text",
+			title="title_post"
+		)
+		self.assertEqual(user, post.author)
+		self.assertEqual("Its content text", post.content)
+		self.assertEqual("title_post", post.title)
+		self.assertEqual("title_post", post.__str__())
+
+		with self.assertRaises(TypeError):
+			Post()
+
