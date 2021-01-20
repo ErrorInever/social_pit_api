@@ -18,3 +18,6 @@ class CustomUserViewSet(ModelViewSet):
 
 def auth(request):
 	return render(request, 'oauth.html')
+
+def index(request):
+	return render(request, 'index.html')
