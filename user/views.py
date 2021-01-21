@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
-from user.models import CustomUser
-from user.serializers import CustomUserSerializer
+from user.models import CustomUser, Post
+from user.serializers import CustomUserSerializer, PostSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +14,12 @@ class CustomUserViewSet(ModelViewSet):
 	permission_classes = [IsAuthenticated]
 	filter_fields = ['first_name']
 	# search_fields = []
+
+
+class PostViewSet(ModelViewSet):
+	queryset = Post.objects.all()
+	serializer_class = PostSerializer
+	permission_classes = [IsAuthenticated]
 
 
 def auth(request):
