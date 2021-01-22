@@ -1,9 +1,12 @@
+import json
+from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from user.serializers import CustomUserSerializer, PostSerializer
 from user.models import Post
+from rest_framework import serializers
 
 
 class CustomUserApiTestCase(APITestCase):
@@ -33,9 +36,9 @@ class CustomUserApiTestCase(APITestCase):
 
 
 class PostApiTestCase(APITestCase):
-	def test_get(self):
+	def setUp(self):
 		User = get_user_model()
-		user = User.objects.create_user(
+		self.user = User.objects.create_user(
 			email='some@user.com', 
 			password='password',
 			first_name='John',
@@ -43,22 +46,77 @@ class PostApiTestCase(APITestCase):
 			hometown='Moscow',
 			bio='Some time some text'
 		)
-		post_1 = Post.objects.create(
-			author=user,
-			content="Its content text 111111",
+		self.post_1 = Post.objects.create(
+			author=self.user,
+			content="1111111",
 			title="title_post_1",
 			created_on=None,
 			updated_on=None
 		)
-		post_2 = Post.objects.create(
-			author=user,
-			content="Its content text 22222",
+		self.post_2 = Post.objects.create(
+			author=self.user,
+			content="2222222",
 			title="title_post_2",
 			created_on=None,
 			updated_on=None
 		)
-		serializer_data = PostSerializer([post_1, post_2], many=True).data
+
+	def test_get(self):
+		serializer_data = PostSerializer([self.post_1, self.post_2], many=True).data
 		url = reverse('post-list')
 		response = self.client.get(url)
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
 		self.assertEqual(serializer_data, response.data)
+
+	def test_create(self):
+		self.assertEqual(2, Post.objects.all().count())
+		url = reverse('post-list')
+		data = {
+			"author": 1,
+			"content": "Test text content",
+			"title": "some title"
+		}
+		json_data = json.dumps(data)
+		self.client.force_login(self.user)
+		response = self.client.post(url, data=json_data, content_type='application/json')
+		self.assertEqual(3, Post.objects.all().count())
+
+		self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+
+	def test_update(self):
+		url = reverse('post-detail', args=(self.post_1.id,))
+		data = {
+			"author": self.user.id,
+			"content": self.post_1.content,
+			"title": "new title"
+		}
+		json_data = json.dumps(data)
+		self.client.force_login(self.user)
+		response = self.client.put(url, data=json_data, content_type='application/json')
+		self.assertEqual(status.HTTP_200_OK, response.status_code)
+		#self.post_1 = Post.objects.get(id=self.post_1.id)
+		self.post_1.refresh_from_db()
+		self.assertEqual("new title", self.post_1.title)
+
+
+	def test_read(self):
+		url = reverse('post-detail', args=(self.post_1.id,))
+		response = self.client.get(url)
+		expected_data = {
+				'id': self.post_1.id,
+				'author': self.user.id,
+				'content': self.post_1.content,
+				'title': self.post_1.title,
+				'created_on': serializers.DateTimeField().to_representation(self.post_1.created_on),
+				'updated_on': serializers.DateTimeField().to_representation(self.post_1.updated_on),
+			}
+		self.assertEqual(expected_data, response.data)
+
+
+	def test_delete(self):
+		self.client.force_login(self.user)
+		url = reverse('post-detail', args=(self.post_1.id,))
+		response = self.client.delete(url)
+		self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
+		response = self.client.delete(url)
+		self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
