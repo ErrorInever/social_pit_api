@@ -57,6 +57,7 @@ class PostSerializerTestCase(TestCase):
 
 		data = PostSerializer(post_1).data
 		expected_data = {
+				'id': post_1.id,
 				'author': user.id,
 				'content': "Its content text 111111",
 				'title': 'title_1',

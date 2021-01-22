@@ -64,7 +64,7 @@ class PostTests(TestCase):
 			hometown='Moscow',
 			bio='Some time some text'
 		)
-		post = Post(
+		post = Post.objects.create(
 			author=user,
 			content="Its content text",
 			title="title_post"
@@ -73,7 +73,3 @@ class PostTests(TestCase):
 		self.assertEqual("Its content text", post.content)
 		self.assertEqual("title_post", post.title)
 		self.assertEqual("title_post", post.__str__())
-
-		with self.assertRaises(TypeError):
-			Post()
-

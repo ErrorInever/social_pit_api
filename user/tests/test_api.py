@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from user.serializers import CustomUserSerializer, PostSerializer
 from user.models import Post
 
+
 class CustomUserApiTestCase(APITestCase):
 	def _get(self):
 		User = get_user_model()
@@ -42,22 +43,21 @@ class PostApiTestCase(APITestCase):
 			hometown='Moscow',
 			bio='Some time some text'
 		)
-		post_1 = Post(
+		post_1 = Post.objects.create(
 			author=user,
 			content="Its content text 111111",
-			title="title_post_1"
+			title="title_post_1",
+			created_on=None,
+			updated_on=None
 		)
-		post_2 = Post(
+		post_2 = Post.objects.create(
 			author=user,
 			content="Its content text 22222",
-			title="title_post_2"
+			title="title_post_2",
+			created_on=None,
+			updated_on=None
 		)
-		post_3 = Post(
-			author=user,
-			content="Its content text 33333",
-			title="title_post_3"
-		)
-		serializer_data = PostSerializer([post_1, post_2, post_3], many=True).data
+		serializer_data = PostSerializer([post_1, post_2], many=True).data
 		url = reverse('post-list')
 		response = self.client.get(url)
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
