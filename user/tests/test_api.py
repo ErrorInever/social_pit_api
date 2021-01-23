@@ -46,6 +46,23 @@ class PostApiTestCase(APITestCase):
 			hometown='Moscow',
 			bio='Some time some text'
 		)
+		self.user_2 = User.objects.create_user(
+			email='some2@user.com', 
+			password='password2',
+			first_name='Boby',
+			last_name='GBr',
+			hometown='SPB',
+			bio='Some 123211221'
+		)
+		self.staff_user = User.objects.create_user(
+			email='staff@mail.ru',
+			password='123456',
+			first_name='Robert',
+			last_name = 'Pure',
+			hometown='Egypt',
+			bio = 'Im a machine',
+			is_staff=True
+		)
 		self.post_1 = Post.objects.create(
 			author=self.user,
 			content="1111111",
@@ -54,7 +71,7 @@ class PostApiTestCase(APITestCase):
 			updated_on=None
 		)
 		self.post_2 = Post.objects.create(
-			author=self.user,
+			author=self.user_2,
 			content="2222222",
 			title="title_post_2",
 			created_on=None,
@@ -82,6 +99,7 @@ class PostApiTestCase(APITestCase):
 		self.assertEqual(3, Post.objects.all().count())
 
 		self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+		self.assertEqual(self.user, Post.objects.last().author)	
 
 	def test_update(self):
 		url = reverse('post-detail', args=(self.post_1.id,))
@@ -97,6 +115,38 @@ class PostApiTestCase(APITestCase):
 		#self.post_1 = Post.objects.get(id=self.post_1.id)
 		self.post_1.refresh_from_db()
 		self.assertEqual("new title", self.post_1.title)
+
+
+	def test_update_not_author(self):
+		url = reverse('post-detail', args=(self.post_2.id,))
+		data = {
+			"author": self.user_2.id,
+			"content": self.post_2.content,
+			"title": "new title"
+		}
+		json_data = json.dumps(data)
+		self.client.force_login(self.user)
+		response = self.client.put(url, data=json_data, content_type='application/json')
+		self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+		#self.post_1 = Post.objects.get(id=self.post_1.id)
+		self.post_1.refresh_from_db()
+		self.assertEqual("title_post_2", self.post_2.title)
+		print(response.data)
+
+	def test_update_not_author_but_staff(self):
+		url = reverse('post-detail', args=(self.post_2.id,))
+		data = {
+			"author": self.user_2.id,
+			"content": self.post_2.content,
+			"title": "new title"
+		}
+		json_data = json.dumps(data)
+		self.client.force_login(self.staff_user)
+		response = self.client.put(url, data=json_data, content_type='application/json')
+		self.assertEqual(status.HTTP_200_OK, response.status_code)
+		self.post_2.refresh_from_db()
+		self.assertEqual("new title", self.post_2.title)
+		print(response.data)
 
 
 	def test_read(self):
