@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from user.serializers import CustomUserSerializer, PostSerializer
-from user.models import Post
+from user.models import Post, UserPostRelation
 from rest_framework import serializers
 
 
@@ -170,3 +170,57 @@ class PostApiTestCase(APITestCase):
 		self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
 		response = self.client.delete(url)
 		self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+
+class UserPostRelationApiTestCase(APITestCase):
+	def setUp(self):
+		User = get_user_model()
+		self.user_1 = User.objects.create_user(
+			email='user_1@mail.com', 
+			password='password',
+			first_name='user_1',
+			last_name='user_1',
+			hometown='Moscow',
+			bio='Some time user_1'
+		)
+		self.user_2 = User.objects.create_user(
+			email='user_2@mail.com', 
+			password='password',
+			first_name='user_2',
+			last_name='user_2',
+			hometown='SPB',
+			bio='Some time user_2'
+		)
+		self.post_1 = Post.objects.create(
+			author=self.user_1,
+			content="content text 11111",
+			title="title_post_1",
+			created_on=None,
+			updated_on=None
+		)
+		self.post_2 = Post.objects.create(
+			author=self.user_2,
+			content="content text 22222",
+			title="title_post_2",
+			created_on=None,
+			updated_on=None
+		)
+
+	def test_like(self):
+		url = reverse('post_relation-detail', args=(self.post_1.id,))
+
+		data = {
+			"like": True,
+		}
+
+		json_data = json.dumps(data)
+		self.client.force_login(self.user_1)
+		response = self.client.patch(url, data=json_data, content_type='application/json')
+		relation = UserPostRelation.objects.get(user=self.user_1.id, post=self.post_1)
+		self.assertTrue(relation.like)
+		self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+
+	def test_like_nigative(self):
+		relation = UserPostRelation.objects.get(user=self.user_2.id, post=self.post_1)
+		self.assertRaises(TypeError, self.assertFalse(relation.like))
