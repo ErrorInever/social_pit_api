@@ -27,12 +27,30 @@ class CustomUser(AbstractUser):
 
 
 class Post(models.Model):
-	author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+	author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='my_posts')
 	content = models.TextField()
 	title = models.CharField(max_length=15)
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
+	readers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserPostRelation', related_name='posts')
 
 	def __str__(self):
 		return self.title
 
+
+class UserPostRelation(models.Model):
+	RATE_CHOICES = (
+		(1, 'Very bad'),
+		(2, 'Bad'),
+		(3, 'Normal'),
+		(4, 'Good'),
+		(5, 'Amazing')
+	)
+
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+	post = models.ForeignKey(Post, on_delete=models.CASCADE)
+	like = models.BooleanField(default=False)
+	rate = models.PositiveSmallIntegerField(choices=RATE_CHOICES, null=True)
+
+	def __str__(self):
+		return f'{self.user.first_name}{self.user.first_name}: {self.post}, RATE {self.rate}'
