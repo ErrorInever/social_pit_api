@@ -4,6 +4,7 @@ from user.serializers import CustomUserSerializer, PostSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from user.permissions import IsAuthorOrStaffOrReadOnly
 from django.shortcuts import render
 
 
@@ -19,7 +20,11 @@ class CustomUserViewSet(ModelViewSet):
 class PostViewSet(ModelViewSet):
 	queryset = Post.objects.all()
 	serializer_class = PostSerializer
-	permission_classes = [IsAuthenticatedOrReadOnly]
+	permission_classes = [IsAuthorOrStaffOrReadOnly]
+
+	def perform_create(self, serializer):
+		serializer.validated_data['author'] = self.request.user
+		serializer.save()
 
 
 def auth(request):
