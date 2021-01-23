@@ -1,6 +1,7 @@
-from rest_framework.viewsets import ModelViewSet
-from user.models import CustomUser, Post
-from user.serializers import CustomUserSerializer, PostSerializer
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.mixins import UpdateModelMixin
+from user.models import CustomUser, Post, UserPostRelation
+from user.serializers import CustomUserSerializer, PostSerializer, UserPostRelationSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -25,6 +26,18 @@ class PostViewSet(ModelViewSet):
 	def perform_create(self, serializer):
 		serializer.validated_data['author'] = self.request.user
 		serializer.save()
+
+
+class UserPostRelationView(UpdateModelMixin, GenericViewSet):
+	permission_classes = [IsAuthenticated]
+	queryset = UserPostRelation.objects.all()
+	serializer_class = UserPostRelationSerializer
+	lookup_field = 'post'
+
+	def get_object(self):
+		"""Access through current post_id and user id from request. We don't transfer relation id in url"""
+		obj, _ = UserPostRelation.objects.get_or_create(user=self.request.user, post_id=self.kwargs['post'])
+		return obj
 
 
 def auth(request):
