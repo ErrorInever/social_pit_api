@@ -1,4 +1,5 @@
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from user.models import CustomUser, Post, UserPostRelation
 
 
@@ -9,9 +10,13 @@ class CustomUserSerializer(ModelSerializer):
 
 
 class PostSerializer(ModelSerializer):
+	annotated_likes = serializers.IntegerField(read_only=True)
+
 	class Meta:
 		model = Post
-		fields = ['id', 'author', 'content', 'title', 'created_on', 'updated_on']
+		fields = ['id', 'author', 'content', 'title', 'created_on', 'updated_on', 'annotated_likes']
+
+
 
 
 class UserPostRelationSerializer(ModelSerializer):
