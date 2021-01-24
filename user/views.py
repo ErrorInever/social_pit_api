@@ -7,6 +7,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from user.permissions import IsAuthorOrStaffOrReadOnly
 from django.shortcuts import render
+from django.db.models import Count, Case, When
 
 
 class CustomUserViewSet(ModelViewSet):
@@ -19,7 +20,8 @@ class CustomUserViewSet(ModelViewSet):
 
 
 class PostViewSet(ModelViewSet):
-	queryset = Post.objects.all()
+	queryset = Post.objects.all().annotate(
+		annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))))
 	serializer_class = PostSerializer
 	permission_classes = [IsAuthorOrStaffOrReadOnly]
 
