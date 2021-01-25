@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from user.serializers import CustomUserSerializer, PostSerializer
 from user.models import Post, UserPostRelation
 from rest_framework import serializers
-
+from django.db.models import Count, Case, When, Avg
 
 class CustomUserApiTestCase(APITestCase):
 	def _get(self):
@@ -79,7 +79,11 @@ class PostApiTestCase(APITestCase):
 		)
 
 	def test_get(self):
-		serializer_data = PostSerializer([self.post_1, self.post_2], many=True).data
+		posts = Post.objects.all().annotate(
+			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))),
+			rating=Avg('userpostrelation__rate')
+			)
+		serializer_data = PostSerializer(posts, many=True).data
 		url = reverse('post-list')
 		response = self.client.get(url)
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
@@ -131,7 +135,6 @@ class PostApiTestCase(APITestCase):
 		#self.post_1 = Post.objects.get(id=self.post_1.id)
 		self.post_1.refresh_from_db()
 		self.assertEqual("title_post_2", self.post_2.title)
-		print(response.data)
 
 	def test_update_not_author_but_staff(self):
 		url = reverse('post-detail', args=(self.post_2.id,))
@@ -146,7 +149,6 @@ class PostApiTestCase(APITestCase):
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
 		self.post_2.refresh_from_db()
 		self.assertEqual("new title", self.post_2.title)
-		print(response.data)
 
 
 	def test_read(self):
@@ -159,6 +161,8 @@ class PostApiTestCase(APITestCase):
 				'title': self.post_1.title,
 				'created_on': serializers.DateTimeField().to_representation(self.post_1.created_on),
 				'updated_on': serializers.DateTimeField().to_representation(self.post_1.updated_on),
+				'annotated_likes': 0,
+				'rating': None
 			}
 		self.assertEqual(expected_data, response.data)
 
@@ -219,8 +223,3 @@ class UserPostRelationApiTestCase(APITestCase):
 		relation = UserPostRelation.objects.get(user=self.user_1.id, post=self.post_1)
 		self.assertTrue(relation.like)
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
-
-
-	def test_like_nigative(self):
-		relation = UserPostRelation.objects.get(user=self.user_2.id, post=self.post_1)
-		self.assertRaises(TypeError, self.assertFalse(relation.like))
