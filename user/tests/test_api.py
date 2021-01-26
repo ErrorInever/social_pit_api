@@ -8,6 +8,9 @@ from user.serializers import CustomUserSerializer, PostSerializer
 from user.models import Post, UserPostRelation
 from rest_framework import serializers
 from django.db.models import Count, Case, When, Avg
+from django.test.utils import CaptureQueriesContext
+from django.db import connection
+
 
 class CustomUserApiTestCase(APITestCase):
 	def _get(self):
@@ -85,7 +88,11 @@ class PostApiTestCase(APITestCase):
 			)
 		serializer_data = PostSerializer(posts, many=True).data
 		url = reverse('post-list')
-		response = self.client.get(url)
+		with CaptureQueriesContext(connection) as queries:
+			# test SQL queries select_related and prefetch_related
+			response = self.client.get(url)
+			self.assertEqual(2, len(queries), 'SQL queries not optimize')
+
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
 		self.assertEqual(serializer_data, response.data)
 
