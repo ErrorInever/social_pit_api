@@ -73,6 +73,14 @@ class PostSerializerTestCase(TestCase):
 		)
 
 	def test_ok(self):
+		"""test fields"""
+		self.post_1 = Post.objects.create(
+			author=self.user_1,
+			content="content text 11111",
+			title="title_post_1",
+			created_on=None,
+			updated_on=None,
+		)
 		posts = Post.objects.filter(id=self.post_1.id).annotate(
 			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))),
 			rating=Avg('userpostrelation__rate')
@@ -86,7 +94,9 @@ class PostSerializerTestCase(TestCase):
 				'created_on': serializers.DateTimeField().to_representation(self.post_1.created_on),
 				'updated_on': serializers.DateTimeField().to_representation(self.post_1.updated_on),
 				'annotated_likes': 0,
-				'rating': None
+				'rating': None,
+				'owner_name': 'user_1',
+				'post_reader': []
 			}]
 		self.assertEqual(expected_data, data)
 
@@ -107,6 +117,17 @@ class PostSerializerTestCase(TestCase):
 				'created_on': serializers.DateTimeField().to_representation(self.post_1.created_on),
 				'updated_on': serializers.DateTimeField().to_representation(self.post_1.updated_on),
 				'annotated_likes': 2,
-				'rating': '3.50'
+				'rating': '3.50',
+				'owner_name': 'user_1',
+				'post_reader': [
+					{
+						'first_name': 'user_1',
+						'last_name': 'user_1',
+					},
+					{
+						'first_name': 'user_2',
+						'last_name': 'user_2',
+					}	
+				]
 			}]
 		self.assertEqual(expected_data, data)

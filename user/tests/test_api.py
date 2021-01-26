@@ -162,7 +162,9 @@ class PostApiTestCase(APITestCase):
 				'created_on': serializers.DateTimeField().to_representation(self.post_1.created_on),
 				'updated_on': serializers.DateTimeField().to_representation(self.post_1.updated_on),
 				'annotated_likes': 0,
-				'rating': None
+				'rating': None,
+				'owner_name': 'John',
+				'post_reader': []
 			}
 		self.assertEqual(expected_data, response.data)
 
