@@ -23,7 +23,7 @@ class PostViewSet(ModelViewSet):
 	queryset = Post.objects.all().annotate(
 		annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))),
 		rating=Avg('userpostrelation__rate')
-		).select_related('author')
+		).select_related('author').prefetch_related('readers')
 	serializer_class = PostSerializer
 	permission_classes = [IsAuthorOrStaffOrReadOnly]
 
