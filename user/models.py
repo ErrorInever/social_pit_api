@@ -33,6 +33,7 @@ class Post(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	readers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserPostRelation', related_name='posts')
+	rating = models.DecimalField(max_digits=3, decimal_places=2, default=None, null=True)
 
 	def __str__(self):
 		return self.title
