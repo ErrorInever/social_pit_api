@@ -55,3 +55,15 @@ class UserPostRelation(models.Model):
 
 	def __str__(self):
 		return f'{self.user.first_name}{self.user.first_name}: {self.post}, RATE {self.rate}'
+
+
+	def save(self, *args, **kwargs):
+		from user.logic import set_rating
+		# if obj creating
+		creating = not self.pk 
+
+		old_rating = self.rate
+		super().save(*args, **kwargs)
+		new_rating = self.rate
+		if old_rating != new_rating or creating:
+			set_rating(self.post)
