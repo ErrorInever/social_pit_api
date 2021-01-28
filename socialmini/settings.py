@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
 
     'user',
+    'friend',
 ]
 
 INTERNAL_IPS = [
