@@ -82,9 +82,7 @@ class PostSerializerTestCase(TestCase):
 			updated_on=None,
 		)
 		posts = Post.objects.filter(id=self.post_1.id).annotate(
-			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))),
-			rating=Avg('userpostrelation__rate')
-			)
+			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))))
 		data = PostSerializer(posts, many=True).data
 		expected_data = [{
 				'id': self.post_1.id,
@@ -105,9 +103,7 @@ class PostSerializerTestCase(TestCase):
 		UserPostRelation.objects.create(user=self.user_1, post=self.post_1, like=True, rate=3)
 		UserPostRelation.objects.create(user=self.user_2, post=self.post_1, like=True, rate=4)
 		posts = Post.objects.filter(id=self.post_1.id).annotate(
-			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))),
-			rating=Avg('userpostrelation__rate')
-			).order_by('id')
+			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1)))).order_by('id')
 		data = PostSerializer(posts, many=True).data
 		expected_data = [{
 				'id': self.post_1.id,

@@ -83,9 +83,7 @@ class PostApiTestCase(APITestCase):
 
 	def test_get(self):
 		posts = Post.objects.all().annotate(
-			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))),
-			rating=Avg('userpostrelation__rate')
-			)
+			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))))
 		serializer_data = PostSerializer(posts, many=True).data
 		url = reverse('post-list')
 		with CaptureQueriesContext(connection) as queries:
