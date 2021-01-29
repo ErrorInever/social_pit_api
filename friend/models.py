@@ -52,7 +52,7 @@ class FriendRequest(models.Model):
 	A friend request
 	"""
 	sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sender')
-	receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sender')
+	receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='receiver')
 	is_active = models.BooleanField(blank=True, null=True, default=True)
 	timestamp = models.DateTimeField(auto_now_add=True)
 
