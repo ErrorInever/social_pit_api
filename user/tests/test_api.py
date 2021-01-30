@@ -81,6 +81,7 @@ class PostApiTestCase(APITestCase):
 			updated_on=None
 		)
 
+
 	def test_get(self):
 		posts = Post.objects.all().annotate(
 			annotated_likes=Count(Case(When(userpostrelation__like=True, then=1))))
@@ -94,11 +95,12 @@ class PostApiTestCase(APITestCase):
 		self.assertEqual(status.HTTP_200_OK, response.status_code)
 		self.assertEqual(serializer_data, response.data)
 
+
 	def test_create(self):
 		self.assertEqual(2, Post.objects.all().count())
 		url = reverse('post-list')
 		data = {
-			"author": 1,
+			"author": self.staff_user.id,
 			"content": "Test text content",
 			"title": "some title"
 		}
@@ -109,6 +111,7 @@ class PostApiTestCase(APITestCase):
 
 		self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 		self.assertEqual(self.user, Post.objects.last().author)	
+
 
 	def test_update(self):
 		url = reverse('post-detail', args=(self.post_1.id,))
@@ -140,6 +143,7 @@ class PostApiTestCase(APITestCase):
 		#self.post_1 = Post.objects.get(id=self.post_1.id)
 		self.post_1.refresh_from_db()
 		self.assertEqual("title_post_2", self.post_2.title)
+
 
 	def test_update_not_author_but_staff(self):
 		url = reverse('post-detail', args=(self.post_2.id,))
@@ -216,6 +220,7 @@ class UserPostRelationApiTestCase(APITestCase):
 			created_on=None,
 			updated_on=None
 		)
+
 
 	def test_like(self):
 		url = reverse('post_relation-detail', args=(self.post_1.id,))
