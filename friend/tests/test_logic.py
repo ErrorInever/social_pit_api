@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from friend.models import FriendList
+from django.core.exceptions import ValidationError
+from friend.exceptions import AlreadyFriendsError, FriendListsDoesNotExist
 
 
 class FriendListTestCase(TestCase):
@@ -23,27 +25,78 @@ class FriendListTestCase(TestCase):
 			bio='bio receiver_1'
 		)
 
+
 	def test_create_friendlist(self):
+		"""
+		Trying to create a friendlist object
+		"""
 		FriendList.objects.create(user=self.sender_1)
 		friend_list = FriendList.objects.get(user=self.sender_1)
 		self.assertTrue(friend_list)
 
+
 	def test_add_friend(self):
+		"""
+		'Sender' trying to add 'receiver' in his friendlist
+		"""
 		FriendList.objects.create(user=self.sender_1)
 		sender_friend_list = FriendList.objects.get(user=self.sender_1)
 		sender_friend_list.add_friend(self.receiver_1)
 		if self.receiver_1 not in sender_friend_list.friends.all():
 				raise ValueError(f'{self.receiver_1.first_name} is not your friend')
-		
+
+
+	def test_add_friend_yourself(self):
+		FriendList.objects.create(user=self.sender_1)
+		sender_friend_list = FriendList.objects.get(user=self.sender_1)
+		with self.assertRaises(ValidationError) as e:
+			sender_friend_list.add_friend(self.sender_1)
+
+
+	def test_add_friend_if_users_already_friends(self):
+		FriendList.objects.create(user=self.sender_1)
+		sender_friend_list = FriendList.objects.get(user=self.sender_1)
+		sender_friend_list.add_friend(self.receiver_1)
+		with self.assertRaises(AlreadyFriendsError) as e:
+			sender_friend_list.add_friend(self.receiver_1)
+
 
 	def test_remove_friend(self):
 		FriendList.objects.create(user=self.sender_1)
 		sender_friend_list = FriendList.objects.get(user=self.sender_1)
 		sender_friend_list.add_friend(self.receiver_1)
-		sender_friend_list.remove_friend(self.receiver_1)
+
+		self.assertTrue(sender_friend_list.remove_friend(self.receiver_1))
+		self.assertFalse(sender_friend_list.remove_friend(self.sender_1))
+
 		if self.receiver_1 in sender_friend_list.friends.all():
-				raise ValueError(f'{self.receiver_1.first_name} has not been removed')
+				raise ValueError(f'{self.receiver_1.first_name} has not been removed!')
 
 
-	def unfriend(self):
-		pass
+	def test_unfriend(self):
+		"""
+		Trying to initiate the action of unfriending.
+		"""
+		FriendList.objects.create(user=self.sender_1)
+		FriendList.objects.create(user=self.receiver_1)
+		sender_friend_list = FriendList.objects.get(user=self.sender_1)
+		receiver_friend_list = FriendList.objects.get(user=self.receiver_1)
+
+		sender_friend_list.add_friend(self.receiver_1)
+		receiver_friend_list.add_friend(self.sender_1)
+
+		sender_friend_list.unfriend(self.receiver_1)
+
+		if (self.receiver_1 in sender_friend_list.friends.all() or 
+				self.sender_1 in receiver_friend_list.friends.all()):
+			raise ValueError(f'{self.receiver_1} and {self.sender_1} has not been unfriended!')
+
+
+	def test_unfriend_negative(self):
+		"""
+		Trying to initiate the action of unfriending if users are not friends
+		"""
+		FriendList.objects.create(user=self.sender_1)
+		sender_friend_list = FriendList.objects.get(user=self.sender_1)
+		with self.assertRaises(ValidationError) as e:
+			sender_friend_list.unfriend(self.receiver_1)
