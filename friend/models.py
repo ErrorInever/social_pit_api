@@ -53,7 +53,7 @@ class FriendList(models.Model):
 		if self.is_mutual_friend(removee):
 			remover_friends_list.remove_friend(removee)
 		else:
-			raise ValidationError('cannot unfriend if user is not friend')
+			raise ValidationError('cannot unfriend if user is not a friend')
 
 
 		# Remove friend from removee friend list
@@ -91,16 +91,25 @@ class FriendRequest(models.Model):
 	def accept(self):
 		"""
 		Accept a friend request
-		Update both SENDER and RECEIVER friend list
+		Update both SENDER and RECEIVER friend list. 
+		If friend lists does not exists then creates them
 		"""
-		receiver_friend_list = FriendList.objects.get(user=self.receiver)
-		if receiver_friend_list:
-			receiver_friend_list.add_friend(self.sender)
+		try:
+			receiver_friend_list = FriendList.objects.get(user=self.receiver)
+		except ObjectDoesNotExist:
+			FriendList.objects.create(user=self.receiver)
+			receiver_friend_list = FriendList.objects.get(user=self.receiver)
+		receiver_friend_list.add_friend(self.sender)
+
+		try:
 			sender_friend_list = FriendList.objects.get(user=self.sender)
-			if sender_friend_list:
-				sender_friend_list.add_friend(self.receiver)
-				self.is_active = False
-				self.save()
+		except ObjectDoesNotExist:
+			FriendList.objects.create(user=self.sender)
+			sender_friend_list = FriendList.objects.get(user=self.sender)
+		sender_friend_list.add_friend(self.receiver)
+
+		self.is_active = False
+		self.save()
 
 
 	def decline(self):
