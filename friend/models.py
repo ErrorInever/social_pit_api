@@ -94,6 +94,9 @@ class FriendRequest(models.Model):
 		Update both SENDER and RECEIVER friend list. 
 		If friend lists does not exists then creates them
 		"""
+		if self.is_active == False:
+			raise ValidationError('Cannot accept request if "self.is_active" == False')
+
 		try:
 			receiver_friend_list = FriendList.objects.get(user=self.receiver)
 		except ObjectDoesNotExist:
